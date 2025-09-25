@@ -1,10 +1,10 @@
 'use client';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchOrders, addOrder, updateOrder, removeOrder } from '../../store/slices/ordersSlice';
-import API from '../../utils/api';
-import io from 'socket.io-client';
-import AdminOrders from '../../components/AdminOrders';
+import { fetchOrders, addOrder } from "@/redux/slices/ordersSlice"
+import API from '@/utils/api';
+import io from "socket.io-client"
+import AdminOrders from '@/components/AdminOrders';
 import { useRouter } from 'next/navigation';
 
 export default function AdminDashboard() {

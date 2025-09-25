@@ -2,11 +2,8 @@ import OrderForm from "@/components/orderForm";
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-lg">
-        <h1 className="text-2xl font-bold mb-4">Place an Order</h1>
+    <main className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-black ">
         <OrderForm />
-      </div>
     </main>
   );
 }

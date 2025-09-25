@@ -22,12 +22,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', authRoutes);
 
-// Emit socket event whenever a new order is created.
-// Simple approach: watch the collection change (requires replica set for change streams).
-// For simplicity, we'll patch createOrder: after creating an order, the controller returns it.
-// Instead we use a polling/listener — but an easy approach: listen to 'new-order' from controllers.
-// To keep code minimal: we'll patch createOrder to emit using a global `io` reference via app.set.
-// Provide io to controllers via req.app.get('io')
+
 app.set('io', io);
 
 // Listen for orders created via Mongoose post middleware (optional)
@@ -45,5 +40,8 @@ io.on('connection', (socket) => {
 // central error handler
 app.use(errorHandler);
 
+app.get("/", (req, res) => {
+  res.send("API is running...");
+})
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on ${PORT}`));
