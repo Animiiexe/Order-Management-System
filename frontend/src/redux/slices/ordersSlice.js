@@ -1,37 +1,47 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import API from '@/utils/api';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import API from "../../utils/api";
 
-export const fetchOrders = createAsyncThunk('orders/fetchAll', async (params, thunkAPI) => {
-  const res = await API.get('/orders', { params });
-  return res.data;
+// Fetch all orders
+export const fetchOrders = createAsyncThunk("orders/fetchOrders", async () => {
+  const { data } = await API.get("/orders");
+  return data;
+});
+
+// Delete order
+export const deleteOrder = createAsyncThunk("orders/deleteOrder", async (id) => {
+  await API.delete(`/orders/${id}`);
+  return id;
+});
+
+// Update order
+export const updateOrder = createAsyncThunk("orders/updateOrder", async ({ id, quantity }) => {
+  const { data } = await API.put(`/orders/${id}`, { quantity });
+  return data;
 });
 
 const ordersSlice = createSlice({
-  name: 'orders',
-  initialState: { list: [], status: 'idle', error: null },
-  reducers: {
-    addOrder(state, action) { state.list.unshift(action.payload); },
-    updateOrder(state, action) {
-      const idx = state.list.findIndex(o => o._id === action.payload._id);
-      if (idx !== -1) state.list[idx] = action.payload;
-    },
-    removeOrder(state, action) {
-      state.list = state.list.filter(o => o._id !== action.payload);
-    }
-  },
-  extraReducers: builder => {
+  name: "orders",
+  initialState: { list: [], loading: false, error: null },
+  reducers: {},
+  extraReducers: (builder) => {
     builder
-      .addCase(fetchOrders.pending, state => { state.status = 'loading'; })
+      .addCase(fetchOrders.pending, (state) => { state.loading = true; })
       .addCase(fetchOrders.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.loading = false;
         state.list = action.payload;
       })
       .addCase(fetchOrders.rejected, (state, action) => {
-        state.status = 'failed';
+        state.loading = false;
         state.error = action.error.message;
+      })
+      .addCase(deleteOrder.fulfilled, (state, action) => {
+        state.list = state.list.filter((o) => o._id !== action.payload);
+      })
+      .addCase(updateOrder.fulfilled, (state, action) => {
+        const index = state.list.findIndex((o) => o._id === action.payload._id);
+        if (index !== -1) state.list[index] = action.payload;
       });
-  }
+  },
 });
 
-export const { addOrder, updateOrder, removeOrder } = ordersSlice.actions;
 export default ordersSlice.reducer;

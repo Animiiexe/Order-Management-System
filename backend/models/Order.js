@@ -1,14 +1,13 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
-const OrderSchema = new mongoose.Schema({
-  customerName: { type: String, required: true, minlength:3, maxlength:30 },
-  email: { type: String, required: true },
-  contactNumber: { type: String, required: true },
-  shippingAddress: { type: String, maxlength:100 },
-  productName: { type: String, required: true, minlength:3, maxlength:50 },
-  quantity: { type: Number, required: true, min:1, max:100 },
-  productImageUrl: { type: String },
-  createdAt: { type: Date, default: Date.now }
-});
+const orderSchema = new mongoose.Schema(
+  {
+    customerName: { type: String, required: true },
+    productName: { type: String, required: true },
+    quantity: { type: Number, required: true },
+    status: { type: String, default: "Pending" }
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('Order', OrderSchema);
+export default mongoose.model("Order", orderSchema);

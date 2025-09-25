@@ -1,80 +1,103 @@
-'use client';
-import API from '../utils/api';
-import { useDispatch } from 'react-redux';
-import { updateOrder, removeOrder } from '@/redux/slices/ordersSlice';
-import { useState } from 'react';
+"use client";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchOrders, deleteOrder, updateOrder } from "../redux/slices/ordersSlice";
 
-export default function AdminOrders({ orders }) {
+export default function AdminOrders() {
   const dispatch = useDispatch();
-  const [errors, setErrors] = useState({}); // keep per-row error messages
+  const { list, loading } = useSelector((state) => state.orders);
+  const [filter, setFilter] = useState("");
+  const [editOrder, setEditOrder] = useState(null);
+  const [newQty, setNewQty] = useState("");
 
-  const handleUpdateQty = async (id, qty) => {
-    if (!Number.isInteger(qty) || qty < 1 || qty > 100) {
-      setErrors(prev => ({ ...prev, [id]: "Quantity must be 1–100" }));
-      return;
-    }
+  useEffect(() => {
+    dispatch(fetchOrders());
+  }, [dispatch]);
 
-    try {
-      const token = localStorage.getItem('adminToken');
-      API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const res = await API.patch(`/orders/${id}/quantity`, { quantity: qty });
-      dispatch(updateOrder(res.data));
-      setErrors(prev => ({ ...prev, [id]: null })); // clear error if successful
-    } catch (err) {
-      console.error("Update failed:", err);
-    }
+  const handleDelete = (id) => {
+    dispatch(deleteOrder(id));
   };
 
-  const handleDelete = async (id) => {
-    try {
-      const token = localStorage.getItem('adminToken');
-      API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      await API.delete(`/orders/${id}`);
-      dispatch(removeOrder(id));
-    } catch (err) {
-      console.error("Delete failed:", err);
-    }
+  const handleUpdate = (id) => {
+    dispatch(updateOrder({ id, quantity: newQty }));
+    setEditOrder(null);
+    setNewQty("");
   };
+
+  const filteredOrders = list.filter((o) =>
+    o.productName.toLowerCase().includes(filter.toLowerCase())
+  );
 
   return (
-    <table className="w-full border">
-      <thead>
-        <tr className="bg-gray-100">
-          <th className="p-2">Customer</th>
-          <th className="p-2">Product</th>
-          <th className="p-2">Quantity</th>
-          <th className="p-2">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {orders.map(o => (
-          <tr key={o._id} className="border-t">
-            <td className="p-2">{o.customerName}</td>
-            <td className="p-2">{o.productName}</td>
-            <td className="p-2">
-              <input
-                type="number"
-                defaultValue={o.quantity}
-                min={1}
-                max={100}
-                className="border p-1 rounded w-20"
-                onBlur={(e) => handleUpdateQty(o._id, Number(e.target.value))}
-              />
-              {errors[o._id] && (
-                <p className="text-red-500 text-sm">{errors[o._id]}</p>
-              )}
-            </td>
-            <td className="p-2">
-              <button
-                onClick={() => handleDelete(o._id)}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">Admin Orders</h2>
+
+      {/* Filter */}
+      <input
+        type="text"
+        placeholder="Filter by product"
+        className="border p-2 mb-4 w-full"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+      />
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <table className="w-full border">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="p-2">Customer</th>
+              <th className="p-2">Product</th>
+              <th className="p-2">Quantity</th>
+              <th className="p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredOrders.map((order) => (
+              <tr key={order._id} className="border-t">
+                <td className="p-2">{order.customerName}</td>
+                <td className="p-2">{order.productName}</td>
+                <td className="p-2">
+                  {editOrder === order._id ? (
+                    <input
+                      type="number"
+                      value={newQty}
+                      onChange={(e) => setNewQty(e.target.value)}
+                      className="border p-1 w-16"
+                    />
+                  ) : (
+                    order.quantity
+                  )}
+                </td>
+                <td className="p-2 space-x-2">
+                  {editOrder === order._id ? (
+                    <button
+                      className="bg-green-500 text-white px-2 py-1 rounded"
+                      onClick={() => handleUpdate(order._id)}
+                    >
+                      Save
+                    </button>
+                  ) : (
+                    <button
+                      className="bg-blue-500 text-white px-2 py-1 rounded"
+                      onClick={() => setEditOrder(order._id)}
+                    >
+                      Edit
+                    </button>
+                  )}
+                  <button
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                    onClick={() => handleDelete(order._id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
   );
 }

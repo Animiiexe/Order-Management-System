@@ -1,8 +1,15 @@
-import axios from 'axios';
+import axios from "axios";
 
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
-  headers: { 'Content-Type': 'application/json' }
+  baseURL: "http://localhost:5000/api",
+});
+
+// Attach JWT token if available
+API.interceptors.request.use((req) => {
+  if (localStorage.getItem("token")) {
+    req.headers.Authorization = `Bearer ${localStorage.getItem("token")}`;
+  }
+  return req;
 });
 
 export default API;

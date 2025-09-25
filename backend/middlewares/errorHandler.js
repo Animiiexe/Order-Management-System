@@ -1,8 +1,7 @@
-module.exports = (err, req, res, next) => {
-  console.error(err);
-  const status = err.status || 500;
-  res.status(status).json({
-    message: err.message || 'Server Error',
-    details: process.env.NODE_ENV === 'production' ? undefined : err.stack
+export const errorHandler = (err, req, res, next) => {
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  res.status(statusCode).json({
+    message: err.message,
+    stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
 };

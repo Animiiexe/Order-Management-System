@@ -1,16 +1,19 @@
-const express = require('express');
+import express from "express";
+import {
+  createOrder,
+  getOrders,
+  getOrderById,
+  updateOrder,
+  deleteOrder,
+} from "../controllers/orderController.js";
+import { protect } from "../middlewares/auth.js";
+
 const router = express.Router();
-const orderCtrl = require('../controllers/orderController');
-const auth = require('../middlewares/auth');
-const upload = require('../middlewares/upload');
 
-// Public endpoint to create order
-router.post('/', upload.single('productImage'), orderCtrl.createOrder);
+router.post("/", createOrder);          // Create order (public)
+router.get("/", protect, getOrders);    // Admin - Get all orders
+router.get("/:id", protect, getOrderById);
+router.put("/:id", protect, updateOrder);
+router.delete("/:id", protect, deleteOrder);
 
-// Protected admin endpoints
-router.get('/', auth, orderCtrl.getAllOrders);
-router.get('/:id', auth, orderCtrl.getOrder);
-router.patch('/:id/quantity', auth, orderCtrl.updateQuantity);
-router.delete('/:id', auth, orderCtrl.deleteOrder);
-
-module.exports = router;
+export default router;

@@ -1,22 +1,20 @@
-const Admin = require('../models/Admin');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { loginSchema } = require('../utils/validators');
+import Admin from "../models/Admin.js";
+import { generateToken } from "../utils/generateToken.js";
 
-exports.adminLogin = async (req, res, next) => {
+export const loginAdmin = async (req, res) => {
+  const { username, password } = req.body;
   try {
-    const { error, value } = loginSchema.validate(req.body);
-    if (error) return res.status(400).json({ message: error.message });
-
-    const admin = await Admin.findOne({ email: value.email });
-    if (!admin) return res.status(401).json({ message: 'Invalid credentials' });
-
-    const matched = await bcrypt.compare(value.password, admin.passwordHash);
-    if (!matched) return res.status(401).json({ message: 'Invalid credentials' });
-
-    const token = jwt.sign({ id: admin._id, email: admin.email }, process.env.JWT_SECRET, { expiresIn: '8h' });
-    res.json({ token });
-  } catch (err) {
-    next(err);
+    const admin = await Admin.findOne({ username });
+    if (admin && (await admin.matchPassword(password))) {
+      res.json({
+        _id: admin._id,
+        username: admin.username,
+        token: generateToken(admin._id),
+      });
+    } else {
+      res.status(401).json({ message: "Invalid username or password" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
