@@ -22,7 +22,12 @@ export const updateOrder = createAsyncThunk("orders/updateOrder", async ({ id, q
 const ordersSlice = createSlice({
   name: "orders",
   initialState: { list: [], loading: false, error: null },
-  reducers: {},
+  reducers: {
+ 
+    addOrder: (state, action) => {
+      state.list.push(action.payload);
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchOrders.pending, (state) => { state.loading = true; })
@@ -43,5 +48,8 @@ const ordersSlice = createSlice({
       });
   },
 });
+
+// ✅ export addOrder so AdminDashboard can use it
+export const { addOrder } = ordersSlice.actions;
 
 export default ordersSlice.reducer;

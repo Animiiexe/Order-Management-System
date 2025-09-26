@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { connectDB } from "./config/db.js";
+import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
@@ -19,7 +19,9 @@ app.use("/api/orders", orderRoutes);
 
 // Error handler
 app.use(errorHandler);
-
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
 // Start server
 const PORT = process.env.PORT || 5000;
 connectDB().then(() => {
